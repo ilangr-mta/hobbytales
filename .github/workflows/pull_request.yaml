@@ -21,4 +21,4 @@ jobs:
 
       # Run Pre-Commit
       - name: "Run Pre-Commit"
-        uses: pre-commit-ci/action@v1
+        uses: pre-commit-ci/lite-action@v1.1.0
