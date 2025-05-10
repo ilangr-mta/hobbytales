@@ -50,4 +50,4 @@ jobs:
       
       # Run the JavaScript tests
       - name: Run JavaScript tests
-        run: npx jest test/test-app.js
+        run: npx jest frontend/test/test-app.js
