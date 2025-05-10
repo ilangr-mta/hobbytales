@@ -1,4 +1,3 @@
 # hobbytales
 # hobbytales
-# hobbytales
-# hobbytales
+# hobbytale
