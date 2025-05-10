@@ -40,14 +40,6 @@ jobs:
       - name: Install Jest
         run: npm install --save-dev jest jest-environment-jsdom
       
-      # Create Jest configuration
-      - name: Create Jest config
-        run: |
-          echo "module.exports = {
-            testEnvironment: 'jsdom',
-            verbose: true
-          };" > jest.config.js
-      
       # Run the JavaScript tests
       - name: Run JavaScript tests
         run: npx jest frontend/test/test-app.js
