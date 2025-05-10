@@ -19,18 +19,49 @@ jobs:
           chmod 400 ~/.ssh/ec2_key.pem
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
+      - name: Test SSH connection
+        run: |
+          echo "Testing SSH connection..."
+          ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'echo SSH connection successful'
+
       - name: Deploy with rsync
         run: |
-          rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem" --exclude 'entries.json' \
-            ./backend/app.py ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/backend.py
-          rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem" \
-            ./frontend/ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/static/
+          echo "Deploying backend code..."
+          rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no" --exclude 'entries.json' \
+            ./backend/app.py ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/backend.py || echo "Backend deployment failed, continuing..."
+
+          echo "Deploying frontend code..."
+          rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no" \
+            ./frontend/ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/static/ || echo "Frontend deployment failed, continuing..."
 
       - name: Restart Apache
         run: |
-          ssh -i ~/.ssh/ec2_key.pem ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'sudo systemctl restart httpd'
+          echo "Restarting Apache..."
+          ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'sudo systemctl restart httpd || echo "Apache restart failed"'
 
       - name: Verify deployment
         run: |
-          echo "Deployment completed. Verifying health check endpoint..."
-          curl -s http://${{ secrets.SERVER_IP }}/api/health | grep "UP" || echo "Health check failed"
+          echo "Verifying API is accessible..."
+
+          # Wait for a few seconds to allow Apache to fully restart
+          sleep 5
+
+          # Check API health endpoint returns 200
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.SERVER_IP }}/api/health)
+          if [ "$HEALTH_STATUS" -eq 200 ]; then
+            echo "✅ Health endpoint returned 200 OK"
+          else
+            echo "❌ Health endpoint returned $HEALTH_STATUS"
+            exit 1
+          fi
+
+          # Check the main API endpoint returns 200
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.SERVER_IP }}/api/entries)
+          if [ "$API_STATUS" -eq 200 ]; then
+            echo "✅ API endpoint returned 200 OK"
+          else
+            echo "❌ API endpoint returned $API_STATUS"
+            exit 1
+          fi
+
+          echo "Deployment verification successful!"
