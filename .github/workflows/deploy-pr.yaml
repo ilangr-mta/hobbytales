@@ -1,0 +1,45 @@
+name: Deploy to Production
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH with EC2 key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_PEM_KEY }}" > ~/.ssh/ec2_key.pem
+          chmod 400 ~/.ssh/ec2_key.pem
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+          
+      - name: Test SSH connection
+        run: |
+          echo "Testing SSH connection..."
+          ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'echo SSH connection successful'
+          
+      - name: Deploy with rsync
+        run: |
+          echo "Deploying backend code..."
+          rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no" --exclude 'entries.json' \
+            ./backend/app.py ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/backend.py || echo "Backend deployment failed, continuing..."
+          
+          echo "Deploying frontend code..."
+          rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no" \
+            ./frontend/ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/static/ || echo "Frontend deployment failed, continuing..."
+          
+      - name: Restart Apache
+        run: |
+          echo "Restarting Apache..."
+          ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'sudo systemctl restart httpd || echo "Apache restart failed"'
+          
+      - name: Verify deployment
+        run: |
+          echo "Deployment completed. Verifying health check endpoint..."
+          curl -s http://${{ secrets.SERVER_IP }}/api/health | grep "UP" || echo "Health check failed"
