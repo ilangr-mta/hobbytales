@@ -29,17 +29,17 @@ jobs:
       # Checkout the project
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'
-          
+
       # Install Jest for testing
       - name: Install Jest
         run: npm install --save-dev jest jest-environment-jsdom
-      
+
       # Run the JavaScript tests
       - name: Run JavaScript tests
         run: npx jest frontend/test/test-app.js
