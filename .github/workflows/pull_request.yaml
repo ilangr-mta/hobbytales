@@ -22,3 +22,32 @@ jobs:
       # Run Pre-Commit
       - name: "Run Pre-Commit"
         uses: pre-commit/action@v3.0.0
+
+  js-tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the project
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          
+      # Install Jest for testing
+      - name: Install Jest
+        run: npm install --save-dev jest
+      
+      # Create Jest configuration
+      - name: Create Jest config
+        run: |
+          echo "module.exports = {
+            testEnvironment: 'jsdom',
+            verbose: true
+          };" > jest.config.js
+      
+      # Run the JavaScript tests
+      - name: Run JavaScript tests
+        run: npx jest test/test-app.js
