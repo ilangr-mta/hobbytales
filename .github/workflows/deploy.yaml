@@ -1,9 +1,12 @@
 name: Deploy to Production
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   deploy:
@@ -47,7 +50,7 @@ jobs:
           sleep 5
 
           # Check API health endpoint returns 200
-          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.SERVER_IP }}/api/health)
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 http://${{ secrets.SERVER_IP }}/api/health)
           if [ "$HEALTH_STATUS" -eq 200 ]; then
             echo "✅ Health endpoint returned 200 OK"
           else
@@ -56,7 +59,7 @@ jobs:
           fi
 
           # Check the main API endpoint returns 200
-          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.SERVER_IP }}/api/entries)
+          API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 http://${{ secrets.SERVER_IP }}/api/entries)
           if [ "$API_STATUS" -eq 200 ]; then
             echo "✅ API endpoint returned 200 OK"
           else
