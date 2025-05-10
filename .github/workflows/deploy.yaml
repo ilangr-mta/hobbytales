@@ -18,18 +18,18 @@ jobs:
           echo "${{ secrets.EC2_PEM_KEY }}" > ~/.ssh/ec2_key.pem
           chmod 400 ~/.ssh/ec2_key.pem
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-          
+
       - name: Deploy with rsync
         run: |
           rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem" --exclude 'entries.json' \
             ./backend/app.py ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/backend.py
           rsync -avz -e "ssh -i ~/.ssh/ec2_key.pem" \
             ./frontend/ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/static/
-          
+
       - name: Restart Apache
         run: |
           ssh -i ~/.ssh/ec2_key.pem ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'sudo systemctl restart httpd'
-          
+
       - name: Verify deployment
         run: |
           echo "Deployment completed. Verifying health check endpoint..."
