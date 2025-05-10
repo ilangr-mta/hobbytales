@@ -18,12 +18,12 @@ jobs:
           echo "${{ secrets.EC2_PEM_KEY }}" > ~/.ssh/ec2_key.pem
           chmod 400 ~/.ssh/ec2_key.pem
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-          
+
       - name: Check SSH connection and sudo access
         run: |
           echo "Testing SSH connection and sudo access..."
           ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'sudo -n echo "Sudo access confirmed"'
-          
+
 
       - name: Deploy via rsync
         run: |
@@ -41,19 +41,19 @@ jobs:
             --rsync-path="sudo rsync" \
             frontend/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/var/www/app/static/
-          
+
       - name: Restart Apache
         run: |
           echo "Restarting Apache..."
           ssh -i ~/.ssh/ec2_key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'sudo systemctl restart httpd || echo "Apache restart failed"'
-          
+
       - name: Verify deployment
         run: |
           echo "Verifying API is accessible..."
-          
+
           # Wait for a few seconds to allow Apache to fully restart
           sleep 5
-          
+
           # Check API health endpoint returns 200
           HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 --max-time 5 http://${{ secrets.SERVER_IP }}/)
           if [ "$HEALTH_STATUS" -eq 200 ]; then
@@ -62,5 +62,5 @@ jobs:
             echo "❌ Health endpoint returned $HEALTH_STATUS"
             exit 1
           fi
-          
+
           echo "Deployment verification successful!"
