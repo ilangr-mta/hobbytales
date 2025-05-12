@@ -1,8 +1,8 @@
 import json
-import os
-
-from flask import Flask, jsonify, request
 from flask_cors import CORS
+import os
+from flask import Flask, jsonify, request
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -64,8 +64,7 @@ def add_entry():
 
 
 @app.route("/api/health", methods=["GET"])
-def health_check():
-    return jsonify({"status": "UP"})
+def health_check(): return jsonify({"status": "UP"})
 
 
 if __name__ == "__main__":
