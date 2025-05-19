@@ -32,18 +32,31 @@ function displayEntries(entries) {
 
   entriesList.innerHTML = '';
 
-  entries.forEach(entry => {
+  entries.forEach((entry, index) => {
     const entryCard = document.createElement('div');
     entryCard.className = 'entry-card';
 
     entryCard.innerHTML = `
-            <div class="entry-name">${entry.name}</div>
-            <div class="entry-interests">${entry.interests}</div>
-        `;
+      <div class="entry-name">${entry.name}</div>
+      <div class="entry-interests">${entry.interests}</div>
+      <button class="delete-btn" data-index="${index}">Delete</button>
+    `;
 
     entriesList.appendChild(entryCard);
   });
+
+  // Add event listeners to delete buttons
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const index = e.target.getAttribute('data-index');
+      if (confirm('Are you sure you want to delete this entry?')) {
+        await deleteEntry(index);
+        fetchEntries();  // Refresh list
+      }
+    });
+  });
 }
+
 
 // Add a new entry
 async function addEntry(entryData) {
@@ -84,3 +97,18 @@ studentForm.addEventListener('submit', function (event) {
 
   addEntry(entryData);
 });
+
+async function deleteEntry(index) {
+  try {
+    const response = await fetch(`${API_URL}/entries/${index}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete entry');
+    }
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
+}
+
