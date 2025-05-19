@@ -94,11 +94,14 @@ function displayEntries(entries) {
   });
 }
 
+<<<<<<< HEAD
 
 // Add a new entry
 async function addEntry(entryData) {
+=======
 // --- הוספת רשומה חדשה ---
 async function addEntry(data) {
+>>>>>>> origin/main
   try {
     const res = await fetch(`${API_URL}/entries`, {
       method: 'POST',
@@ -142,4 +145,3 @@ async function deleteEntry(index) {
     alert(`Error: ${error.message}`);
   }
 }
-
