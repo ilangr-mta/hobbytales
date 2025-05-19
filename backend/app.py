@@ -29,6 +29,7 @@ def load_entries():
         app.logger.error(f"Trying to access: {os.path.abspath(ENTRIES_FILE)}")
         return {"entries": []}
 
+
 # Delete an entry by index
 @app.route("/entries/<int:index>", methods=["DELETE"])
 def delete_entry(index):
