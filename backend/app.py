@@ -30,7 +30,7 @@ def load_entries():
         return {"entries": []}
 
 # Delete an entry by index
-@app.route('/entries/<int:index>', methods=['DELETE'])
+@app.route("/entries/<int:index>", methods=["DELETE"])
 def delete_entry(index):
     try:
         entries = load_entries()
