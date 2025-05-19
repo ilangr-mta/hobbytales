@@ -1,18 +1,18 @@
 import json
 import os
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from datetime import datetime
+import uuid
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# Path to our JSON file that will store entries using absolute path
-APP_DIR = "/var/www/app"
+# Use current directory where app.py is located
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
 ENTRIES_FILE = os.path.join(APP_DIR, "entries.json")
 
 
-# Initialize entries data
 def load_entries():
     try:
         if os.path.exists(ENTRIES_FILE):
@@ -25,9 +25,54 @@ def load_entries():
             return default_entries
     except Exception as e:
         app.logger.error(f"Error loading entries: {e}")
-        app.logger.error(f"Current directory: {os.getcwd()}")
-        app.logger.error(f"Trying to access: {os.path.abspath(ENTRIES_FILE)}")
         return {"entries": []}
+
+
+def save_entries(entries):
+    try:
+        with open(ENTRIES_FILE, "w") as file:
+            json.dump(entries, file, indent=2)
+    except Exception as e:
+        app.logger.error(f"Error saving entries: {e}")
+
+
+@app.route("/entries", methods=["GET"])
+def get_entries():
+    entries = load_entries()
+    return jsonify(entries["entries"])
+
+
+@app.route("/entries", methods=["POST"])
+def add_entry():
+    try:
+        entries = load_entries()
+        new_entry = request.json
+
+        new_entry["id"] = str(uuid.uuid4())
+        new_entry["timestamp"] = datetime.now().isoformat()
+
+        entries["entries"].append(new_entry)
+        save_entries(entries)
+        return jsonify(new_entry), 201
+    except Exception as e:
+        app.logger.error(f"Error adding entry: {e}")
+        return jsonify({"error": "Failed to add entry"}), 500
+
+
+# ✅ מחיקה לפי index (עבור קוד ישן יותר / fallback)
+@app.route("/entries/index/<int:index>", methods=["DELETE"])
+def delete_entry_by_index(index):
+    try:
+        entries = load_entries()
+        if 0 <= index < len(entries["entries"]):
+            deleted_entry = entries["entries"].pop(index)
+            save_entries(entries)
+            return jsonify(deleted_entry), 200
+        else:
+            return jsonify({"error": "Invalid entry index"}), 404
+    except Exception as e:
+        app.logger.error(f"Error deleting entry by index: {e}")
+        return jsonify({"error": "Failed to delete entry by index"}), 500
 
 
 # Delete an entry by index
@@ -44,39 +89,6 @@ def delete_entry(index):
     except Exception as e:
         app.logger.error(f"Error deleting entry: {e}")
         return jsonify({"error": "Failed to delete entry"}), 500
-
-
-# Save entries to file
-def save_entries(entries):
-    try:
-        app.logger.info(f"Saving entries to: {os.path.abspath(ENTRIES_FILE)}")
-
-        with open(ENTRIES_FILE, "w") as file:
-            json.dump(entries, file, indent=2)
-    except Exception as e:
-        app.logger.error(f"Error saving entries: {e}")
-        app.logger.error(f"Current directory: {os.getcwd()}")
-        app.logger.error(f"Trying to write to: {os.path.abspath(ENTRIES_FILE)}")
-
-
-@app.route("/entries", methods=["GET"])
-def get_entries():
-    entries = load_entries()
-    return jsonify(entries["entries"])
-
-
-@app.route("/entries", methods=["POST"])
-def add_entry():
-    try:
-        entries = load_entries()
-        new_entry = request.json
-
-        entries["entries"].append(new_entry)
-        save_entries(entries)
-        return jsonify(new_entry), 201
-    except Exception as e:
-        app.logger.error(f"Error adding entry: {e}")
-        return jsonify({"error": "Failed to add entry"}), 500
 
 
 @app.route("/api/health", methods=["GET"])

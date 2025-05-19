@@ -1,8 +1,12 @@
+// NEW!!!
+
 const studentForm = document.getElementById('student-form');
 const nameInput = document.getElementById('name');
 const interestsInput = document.getElementById('interests');
 const entriesList = document.getElementById('entries-list');
 const notificationContainer = document.getElementById('notification-container');
+
+// Check!!!
 
 const API_URL = '/api';
 
@@ -53,55 +57,29 @@ function displayEntries(entries) {
   }
 
   entriesList.innerHTML = '';
-<<<<<<< HEAD
-
-  entries.forEach((entry, index) => {
-    const entryCard = document.createElement('div');
-    entryCard.className = 'entry-card';
-
-    entryCard.innerHTML = `
-      <div class="entry-name">${entry.name}</div>
-      <div class="entry-interests">${entry.interests}</div>
-      <button class="delete-btn" data-index="${index}">Delete</button>
-    `;
-=======
   entries.forEach(entry => {
+    const date = new Date(entry.timestamp);
+    const formattedDate = date.toLocaleString();
+
     const card = document.createElement('div');
     card.className = 'entry-card';
     card.innerHTML = `
       <div class="entry-name">${entry.name}</div>
       <div class="entry-interests">${entry.interests}</div>
+      <div class="entry-date">${formattedDate}</div>
       <button class="delete-button">Delete</button>
     `;
 
-    // bind למחיקה
     card.querySelector('.delete-button')
         .addEventListener('click', () => deleteEntry(entry.id));
->>>>>>> origin/main
 
     entriesList.appendChild(card);
   });
-
-  // Add event listeners to delete buttons
-  document.querySelectorAll('.delete-btn').forEach(button => {
-    button.addEventListener('click', async (e) => {
-      const index = e.target.getAttribute('data-index');
-      if (confirm('Are you sure you want to delete this entry?')) {
-        await deleteEntry(index);
-        fetchEntries();  // Refresh list
-      }
-    });
-  });
 }
 
-<<<<<<< HEAD
 
-// Add a new entry
-async function addEntry(entryData) {
-=======
 // --- הוספת רשומה חדשה ---
 async function addEntry(data) {
->>>>>>> origin/main
   try {
     const res = await fetch(`${API_URL}/entries`, {
       method: 'POST',
@@ -121,7 +99,7 @@ async function addEntry(data) {
   }
 }
 
-// --- אירועים ---
+
 window.addEventListener('load', fetchEntries);
 
 studentForm.addEventListener('submit', e => {
@@ -131,17 +109,3 @@ studentForm.addEventListener('submit', e => {
     interests: interestsInput.value.trim()
   });
 });
-
-async function deleteEntry(index) {
-  try {
-    const response = await fetch(`${API_URL}/entries/${index}`, {
-      method: 'DELETE'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete entry');
-    }
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-  }
-}
