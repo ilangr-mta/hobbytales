@@ -2,28 +2,50 @@ const studentForm = document.getElementById('student-form');
 const nameInput = document.getElementById('name');
 const interestsInput = document.getElementById('interests');
 const entriesList = document.getElementById('entries-list');
+const notificationContainer = document.getElementById('notification-container');
 
-// API endpoint (for the Python backend)
 const API_URL = '/api';
 
-// Fetch all entries from the backend
-async function fetchEntries() {
-  entriesList.innerHTML = '<div class="loading">Loading entries...</div>';
+// --- פונקציה להצגת הודעה אלגנטית בדף ---
+function showNotification(message, type = 'success') {
+  const notif = document.createElement('div');
+  notif.className = `notification ${type}`;
+  notif.textContent = message;
+  notificationContainer.appendChild(notif);
 
+  // אחרי 3 שניות מסירים אותה
+  setTimeout(() => {
+    notif.classList.add('fade-out');
+    notif.addEventListener('transitionend', () => notif.remove());
+  }, 3000);
+}
+
+// --- מחיקת רשומה ב־API ---
+async function deleteEntry(id) {
   try {
-    const response = await fetch(`${API_URL}/entries`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch entries');
-    }
-
-    const entries = await response.json();
-    displayEntries(entries);
-  } catch (error) {
-    entriesList.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+    const res = await fetch(`${API_URL}/entries/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete');
+    showNotification('הרשומה נמחקה בהצלחה');
+    fetchEntries();
+  } catch (err) {
+    showNotification(`שגיאה במחיקה: ${err.message}`, 'error');
   }
 }
 
-// Display entries in the UI
+// --- שליפת כל הרשומות ---
+async function fetchEntries() {
+  entriesList.innerHTML = '<div class="loading">Loading entries...</div>';
+  try {
+    const res = await fetch(`${API_URL}/entries`);
+    if (!res.ok) throw new Error('Failed to fetch entries');
+    const entries = await res.json();
+    displayEntries(entries);
+  } catch (err) {
+    entriesList.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+  }
+}
+
+// --- הצגת הרשומות + כפתור מחיקה ---
 function displayEntries(entries) {
   if (entries.length === 0) {
     entriesList.innerHTML = '<p>No entries yet. Be the first to add yours!</p>';
@@ -31,6 +53,7 @@ function displayEntries(entries) {
   }
 
   entriesList.innerHTML = '';
+<<<<<<< HEAD
 
   entries.forEach((entry, index) => {
     const entryCard = document.createElement('div');
@@ -41,8 +64,22 @@ function displayEntries(entries) {
       <div class="entry-interests">${entry.interests}</div>
       <button class="delete-btn" data-index="${index}">Delete</button>
     `;
+=======
+  entries.forEach(entry => {
+    const card = document.createElement('div');
+    card.className = 'entry-card';
+    card.innerHTML = `
+      <div class="entry-name">${entry.name}</div>
+      <div class="entry-interests">${entry.interests}</div>
+      <button class="delete-button">Delete</button>
+    `;
 
-    entriesList.appendChild(entryCard);
+    // bind למחיקה
+    card.querySelector('.delete-button')
+        .addEventListener('click', () => deleteEntry(entry.id));
+>>>>>>> origin/main
+
+    entriesList.appendChild(card);
   });
 
   // Add event listeners to delete buttons
@@ -60,42 +97,36 @@ function displayEntries(entries) {
 
 // Add a new entry
 async function addEntry(entryData) {
+// --- הוספת רשומה חדשה ---
+async function addEntry(data) {
   try {
-    const response = await fetch(`${API_URL}/entries`, {
+    const res = await fetch(`${API_URL}/entries`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(entryData)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     });
+    if (!res.ok) throw new Error('Failed to add entry');
 
-    if (!response.ok) {
-      throw new Error('Failed to add entry');
-    }
-
-    // Clear form inputs
+    // נקה טופס
     nameInput.value = '';
     interestsInput.value = '';
 
-    // Refresh entries list
+    showNotification('הרשומה נוספה בהצלחה');
     fetchEntries();
-  } catch (error) {
-    alert(`Error: ${error.message}`);
+  } catch (err) {
+    showNotification(`שגיאה בהוספה: ${err.message}`, 'error');
   }
 }
 
-// Event Listeners
+// --- אירועים ---
 window.addEventListener('load', fetchEntries);
 
-studentForm.addEventListener('submit', function (event) {
-  event.preventDefault();
-
-  const entryData = {
+studentForm.addEventListener('submit', e => {
+  e.preventDefault();
+  addEntry({
     name: nameInput.value.trim(),
     interests: interestsInput.value.trim()
-  };
-
-  addEntry(entryData);
+  });
 });
 
 async function deleteEntry(index) {
