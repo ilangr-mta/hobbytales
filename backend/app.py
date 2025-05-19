@@ -29,6 +29,21 @@ def load_entries():
         app.logger.error(f"Trying to access: {os.path.abspath(ENTRIES_FILE)}")
         return {"entries": []}
 
+# Delete an entry by index
+@app.route('/entries/<int:index>', methods=['DELETE'])
+def delete_entry(index):
+    try:
+        entries = load_entries()
+        if 0 <= index < len(entries["entries"]):
+            deleted_entry = entries["entries"].pop(index)
+            save_entries(entries)
+            return jsonify(deleted_entry), 200
+        else:
+            return jsonify({"error": "Invalid entry index"}), 404
+    except Exception as e:
+        app.logger.error(f"Error deleting entry: {e}")
+        return jsonify({"error": "Failed to delete entry"}), 500
+
 
 # Save entries to file
 def save_entries(entries):
