@@ -10,7 +10,8 @@
 
 <body>
   <div class="container">
-    <h1>Student Interests</h1>
+    <h1>Student 
+      Interests</h1>
     <p>Share your name and what you enjoy!</p>
 
     <div class="form-container">
@@ -23,6 +24,30 @@
           <label for="interests">Your Hobbies/Favorite Series:</label>
           <textarea id="interests" required></textarea>
         </div>
+
+           <div class="form-group">
+          <label for="subject">תחום עניין:</label>
+          <select id="subject" required>
+            <option value="">בחר תחום</option>
+            <option value="מדעי המחשב">מדעי המחשב</option>
+            <option value="אמנות">אמנות</option>
+            <option value="ספורט">ספורט</option>
+            <option value="מוזיקה">מוזיקה</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="degree">סוג תואר אקדמי:</label>
+          <select id="degree" required>
+            <option value="">בחר תואר</option>
+            <option value="תואר ראשון">תואר ראשון</option>
+            <option value="תואר שני">תואר שני</option>
+            <option value="תואר שלישי">תואר שלישי</option>
+          </select>
+        </div>
+
+
+
         <button type="submit">Submit</button>
       </form>
     </div>
