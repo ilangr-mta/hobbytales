@@ -53,6 +53,18 @@ function displayEntries(entries) {
   }
 
   entriesList.innerHTML = '';
+<<<<<<< HEAD
+
+  entries.forEach((entry, index) => {
+    const entryCard = document.createElement('div');
+    entryCard.className = 'entry-card';
+
+    entryCard.innerHTML = `
+      <div class="entry-name">${entry.name}</div>
+      <div class="entry-interests">${entry.interests}</div>
+      <button class="delete-btn" data-index="${index}">Delete</button>
+    `;
+=======
   entries.forEach(entry => {
     const card = document.createElement('div');
     card.className = 'entry-card';
@@ -65,13 +77,31 @@ function displayEntries(entries) {
     // bind למחיקה
     card.querySelector('.delete-button')
         .addEventListener('click', () => deleteEntry(entry.id));
+>>>>>>> origin/main
 
     entriesList.appendChild(card);
   });
+
+  // Add event listeners to delete buttons
+  document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const index = e.target.getAttribute('data-index');
+      if (confirm('Are you sure you want to delete this entry?')) {
+        await deleteEntry(index);
+        fetchEntries();  // Refresh list
+      }
+    });
+  });
 }
 
+<<<<<<< HEAD
+
+// Add a new entry
+async function addEntry(entryData) {
+=======
 // --- הוספת רשומה חדשה ---
 async function addEntry(data) {
+>>>>>>> origin/main
   try {
     const res = await fetch(`${API_URL}/entries`, {
       method: 'POST',
@@ -101,3 +131,17 @@ studentForm.addEventListener('submit', e => {
     interests: interestsInput.value.trim()
   });
 });
+
+async function deleteEntry(index) {
+  try {
+    const response = await fetch(`${API_URL}/entries/${index}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete entry');
+    }
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  }
+}
