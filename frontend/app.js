@@ -1,6 +1,8 @@
 const studentForm = document.getElementById('student-form');
 const nameInput = document.getElementById('name');
 const interestsInput = document.getElementById('interests');
+const areaSelect = document.getElementById('area');
+const degreeSelect = document.getElementById('degree');
 const entriesList = document.getElementById('entries-list');
 const notificationContainer = document.getElementById('notification-container');
 

@@ -114,3 +114,20 @@ button:hover {
   background: #fadbd8;
   border-radius: 4px;
 }
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+}
+
+.entry {
+  background: #f9f9f9;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
