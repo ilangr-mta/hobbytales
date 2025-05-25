@@ -1,0 +1,6 @@
+# Code owners for workflow files
+# Only the repository owner can approve changes to these critical workflow files
+
+.github/workflows/ @ilangr-mta
+.pre-commit-config.yaml @ilangr-mta
+# backend/requirements.txt @your-github-username
